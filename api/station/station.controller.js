@@ -5,11 +5,12 @@ export async function getStations(req, res) {
 	console.log('station.controller getStations')
 	try {
 		const filterBy = {
-			txt: req.query.txt || '',
-			minSpeed: +req.query.minSpeed || 0,
-            sortField: req.query.sortField || '',
-            sortDir: req.query.sortDir || 1,
-			pageIdx: req.query.pageIdx,
+			createdBy : req.query.createdBy || '',
+			// txt: req.query.txt || '',
+			// minSpeed: +req.query.minSpeed || 0,
+            // sortField: req.query.sortField || '',
+            // sortDir: req.query.sortDir || 1,
+			// pageIdx: req.query.pageIdx,
 		}
 		const stations = await stationService.query(filterBy)
         
@@ -20,29 +21,29 @@ export async function getStations(req, res) {
 	}
 }
 
-// export async function getCarById(req, res) {
-// 	try {
-// 		const carId = req.params.id
-// 		const car = await carService.getById(carId)
-// 		res.json(car)
-// 	} catch (err) {
-// 		logger.error('Failed to get car', err)
-// 		res.status(400).send({ err: 'Failed to get car' })
-// 	}
-// }
+export async function getStationById(req, res) {
+	try {
+		const stationId = req.params.id
+		const station = await stationService.getById(stationId)
+		res.json(station)
+	} catch (err) {
+		logger.error('Failed to get station', err)
+		res.status(400).send({ err: 'Failed to get station' })
+	}
+}
 
-// export async function addCar(req, res) {
-// 	const { loggedinUser, body: car } = req
+export async function addStation(req, res) {
+	const { loggedinUser, body: station } = req
 
-// 	try {
-// 		car.owner = loggedinUser
-// 		const addedCar = await carService.add(car)
-// 		res.json(addedCar)
-// 	} catch (err) {
-// 		logger.error('Failed to add car', err)
-// 		res.status(400).send({ err: 'Failed to add car' })
-// 	}
-// }
+	try {
+		station.createdBy = loggedinUser
+		const addedStation = await stationService.add(station)
+		res.json(addedStation)
+	} catch (err) {
+		logger.error('Failed to add station', err)
+		res.status(400).send({ err: 'Failed to add station' })
+	}
+}
 
 // export async function updateCar(req, res) {
 // 	const { loggedinUser, body: car } = req
@@ -62,17 +63,17 @@ export async function getStations(req, res) {
 // 	}
 // }
 
-// export async function removeCar(req, res) {
-// 	try {
-// 		const carId = req.params.id
-// 		const removedId = await carService.remove(carId)
+export async function removeStation(req, res) {
+	try {
+		const stationId = req.params.id
+		const removedId = await stationService.remove(stationId)
 
-// 		res.send(removedId)
-// 	} catch (err) {
-// 		logger.error('Failed to remove car', err)
-// 		res.status(400).send({ err: 'Failed to remove car' })
-// 	}
-// }
+		res.send(removedId)
+	} catch (err) {
+		logger.error('Failed to remove station', err)
+		res.status(400).send({ err: 'Failed to remove station' })
+	}
+}
 
 // export async function addCarMsg(req, res) {
 // 	const { loggedinUser } = req
