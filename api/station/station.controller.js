@@ -6,6 +6,7 @@ export async function getStations(req, res) {
 	try {
 		const filterBy = {
 			createdBy : req.query.createdBy || '',
+			notCreatedBy : req.query.notCreatedBy || '',
 			// txt: req.query.txt || '',
 			// minSpeed: +req.query.minSpeed || 0,
             // sortField: req.query.sortField || '',
@@ -33,10 +34,18 @@ export async function getStationById(req, res) {
 }
 
 export async function addStation(req, res) {
-	const { loggedinUser, body: station } = req
-
+	const { loggedInUser, body: station } = req
+    console.log('station:', station)
 	try {
-		station.createdBy = loggedinUser
+		
+        
+		const logeddinUserCopy = { ...loggedInUser }
+        delete logeddinUserCopy._id;
+		station.createdBy = logeddinUserCopy
+		station.createdBy.id = loggedInUser._id
+
+
+
 		const addedStation = await stationService.add(station)
 		res.json(addedStation)
 	} catch (err) {
@@ -45,23 +54,24 @@ export async function addStation(req, res) {
 	}
 }
 
-// export async function updateCar(req, res) {
-// 	const { loggedinUser, body: car } = req
-//     const { _id: userId, isAdmin } = loggedinUser
+export async function updateStation(req, res) {
+	const { loggedInUser, body: station } = req
+    const { _id: userId, isAdmin } = loggedInUser
 
-//     if(!isAdmin && car.owner._id !== userId) {
-//         res.status(403).send('Not your car...')
-//         return
-//     }
+     if(!isAdmin && station.createdBy.id !== userId) {
 
-// 	try {
-// 		const updatedCar = await carService.update(car)
-// 		res.json(updatedCar)
-// 	} catch (err) {
-// 		logger.error('Failed to update car', err)
-// 		res.status(400).send({ err: 'Failed to update car' })
-// 	}
-// }
+        res.status(403).send('Not your station...')
+        return
+    }
+
+	try {
+		const updatedStation = await stationService.update(station)
+		res.json(updatedStation)
+	} catch (err) {
+		logger.error('Failed to update station', err)
+		res.status(400).send({ err: 'Failed to update station' })
+	}
+}
 
 export async function removeStation(req, res) {
 	try {
