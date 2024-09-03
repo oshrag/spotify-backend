@@ -11,7 +11,8 @@ export const stationService = {
     remove,
     query,
     getById,
-    add
+    add,
+    createLikedSongsStation
     // update,
     // addCarMsg,
     // removeCarMsg,
@@ -94,6 +95,21 @@ async function add(station) {
         logger.error('cannot insert station', err)
         throw err
     }
+}
+
+function createLikedSongsStation(miniUser) {
+    const newStation = {
+        name: "Liked Songs",
+        type: "liked",
+        description: null,
+        imgUrl: 'https://www.greencode.co.il/wp-content/uploads/2024/07/station-thumb-default.jpg',
+        tags: [],
+        createdBy: miniUser,
+        savedBy: [],
+        songs: []
+    }
+
+    add(newStation);
 }
 
 // async function update(car) {
