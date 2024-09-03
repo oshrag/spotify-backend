@@ -12,14 +12,17 @@ export const stationService = {
     query,
     getById,
     add,
+    update,
     createLikedSongsStation
-    // update,
     // addCarMsg,
     // removeCarMsg,
 }
 
 async function query(filterBy = { txt: '' }) {
     try {
+
+       console.log('filterby:', filterBy)
+
         const criteria = _buildCriteria(filterBy)
         // const sort = _buildSort(filterBy)
 
@@ -65,14 +68,15 @@ async function getById(stationId) {
 }
 
 async function remove(stationId) {
-    const { loggedinUser } = asyncLocalStorage.getStore()
-    const { _id: ownerId, isAdmin } = loggedinUser
+    const { loggedInUser } = asyncLocalStorage.getStore()
+    const { _id: ownerId, isAdmin } = loggedInUser
+
 
     try {
         const criteria = {
             _id: ObjectId.createFromHexString(stationId),
         }
-        if (!isAdmin) criteria['createdBy._id'] = ownerId
+        if (!isAdmin) criteria['createdBy.id'] = ownerId
 
         const collection = await dbService.getCollection('station')
         const res = await collection.deleteOne(criteria)
@@ -97,8 +101,25 @@ async function add(station) {
     }
 }
 
+async function update(station) {
+    const stationToSave = { name: station.name, description: station.description, songs: station.songs , imgUrl : station.imgUrl}
+
+    try {
+        const criteria = { _id: ObjectId.createFromHexString(station._id) }
+
+        const collection = await dbService.getCollection('station')
+        await collection.updateOne(criteria, { $set: stationToSave })
+
+        return station
+    } catch (err) {
+        logger.error(`cannot update station ${station._id}`, err)
+        throw err
+    }
+}
+
+
 function createLikedSongsStation(miniUser) {
-    const newStation = {
+    const newStation =  {
         name: "Liked Songs",
         type: "liked",
         description: null,
@@ -112,21 +133,9 @@ function createLikedSongsStation(miniUser) {
     add(newStation);
 }
 
-// async function update(car) {
-//     const carToSave = { vendor: car.vendor, speed: car.speed }
 
-//     try {
-//         const criteria = { _id: ObjectId.createFromHexString(car._id) }
 
-//         const collection = await dbService.getCollection('car')
-//         await collection.updateOne(criteria, { $set: carToSave })
 
-//         return car
-//     } catch (err) {
-//         logger.error(`cannot update car ${car._id}`, err)
-//         throw err
-//     }
-// }
 
 // async function addCarMsg(carId, msg) {
 //     try {
@@ -166,6 +175,14 @@ function _buildCriteria(filterBy) {
             $or: [
                 { 'createdBy.id': filterBy.createdBy },
                 { 'savedBy': { $in: [filterBy.createdBy] } }
+            ]
+        }
+        return criteria
+    } else if (filterBy.notCreatedBy) {
+        const criteria = {
+            $nor: [
+                { 'createdBy.id': filterBy.notCreatedBy }, 
+                { 'savedBy': { $in: [filterBy.notCreatedBy] } } 
             ]
         }
         return criteria
