@@ -39,10 +39,14 @@ export async function addStation(req, res) {
 	try {
 		
         
-		const logeddinUserCopy = { ...loggedInUser }
-        delete logeddinUserCopy._id;
-		station.createdBy = logeddinUserCopy
-		station.createdBy.id = loggedInUser._id
+		// const logeddinUserCopy = { ...loggedInUser }
+        // delete logeddinUserCopy._id;
+		// station.createdBy = logeddinUserCopy
+		// station.createdBy.id = loggedInUser._id
+
+
+		const { _id, ...logeddinUserCopy } = loggedInUser;
+		station.createdBy = { ...logeddinUserCopy, id: _id };
 
 
 
