@@ -24,10 +24,11 @@ async function query(filterBy = { txt: '' }) {
        console.log('filterby:', filterBy)
 
         const criteria = _buildCriteria(filterBy)
-       // const sort = _buildSort(filterBy)
-  
-       console.log('criteria:', criteria)
-      
+        // const sort = _buildSort(filterBy)
+
+        console.log('filterby:', filterBy)
+        console.log('criteria:', criteria)
+
         const collection = await dbService.getCollection('station')
         var stationCursor = await collection.find(criteria)
         console.log('station.service query')
@@ -117,7 +118,6 @@ async function update(station) {
 }
 
 
-
 function createLikedSongsStation(miniUser) {
     const newStation =  {
         name: "Liked Songs",
@@ -170,11 +170,11 @@ function createLikedSongsStation(miniUser) {
 
 function _buildCriteria(filterBy) {
 
-   if (filterBy.createdBy) {
+    if (filterBy.createdBy) {
         const criteria = {
             $or: [
-                { 'createdBy.id': filterBy.createdBy }, 
-                { 'savedBy': { $in: [filterBy.createdBy] } } 
+                { 'createdBy.id': filterBy.createdBy },
+                { 'savedBy': { $in: [filterBy.createdBy] } }
             ]
         }
         return criteria
@@ -190,7 +190,7 @@ function _buildCriteria(filterBy) {
         return {}
     }
 
-   
+
 }
 
 function _buildSort(filterBy) {
