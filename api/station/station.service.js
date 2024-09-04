@@ -13,7 +13,8 @@ export const stationService = {
     getById,
     add,
     update,
-    createLikedSongsStation
+    createLikedSongsStation,
+    updateSavedBy
     // addCarMsg,
     // removeCarMsg,
 }
@@ -21,17 +22,16 @@ export const stationService = {
 async function query(filterBy = { txt: '' }) {
     try {
 
-       console.log('filterby:', filterBy)
+      
 
         const criteria = _buildCriteria(filterBy)
         // const sort = _buildSort(filterBy)
 
-        console.log('filterby:', filterBy)
-        console.log('criteria:', criteria)
+        // console.log('filterby:', filterBy)
+        // console.log('criteria:', criteria)
 
         const collection = await dbService.getCollection('station')
         var stationCursor = await collection.find(criteria)
-        console.log('station.service query')
         //var stationCursor = await collection.find()
 
 
@@ -58,7 +58,7 @@ async function getById(stationId) {
 
         const collection = await dbService.getCollection('station')
         const station = await collection.findOne(criteria)
-        console.log('station:', station)
+        // console.log('station:', station)
         station.createdAt = station._id.getTimestamp()
         return station
     } catch (err) {
@@ -102,7 +102,10 @@ async function add(station) {
 }
 
 async function update(station) {
-    const stationToSave = { name: station.name, description: station.description, songs: station.songs , imgUrl : station.imgUrl}
+    const stationToSave = { name: station.name, description: station.description, songs: station.songs , imgUrl : station.imgUrl, savedBy : station.savedBy}
+
+    console.log('upadate stationToSave:', stationToSave)
+
 
     try {
         const criteria = { _id: ObjectId.createFromHexString(station._id) }
@@ -117,6 +120,25 @@ async function update(station) {
     }
 }
 
+
+async function updateSavedBy(station) {
+    const stationToSave = { savedBy : station.savedBy }
+
+    console.log('upadateSavedBy stationToSave:', stationToSave)
+
+
+    try {
+        const criteria = { _id: ObjectId.createFromHexString(station._id) }
+
+        const collection = await dbService.getCollection('station')
+        await collection.updateOne(criteria, { $set: stationToSave })
+
+        return station
+    } catch (err) {
+        logger.error(`cannot update station ${station._id}`, err)
+        throw err
+    }
+}
 
 function createLikedSongsStation(miniUser) {
     const newStation =  {

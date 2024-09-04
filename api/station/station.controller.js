@@ -2,7 +2,6 @@ import { logger } from '../../services/logger.service.js'
 import { stationService } from './station.service.js'
 
 export async function getStations(req, res) {
-	console.log('station.controller getStations')
 	try {
 		const filterBy = {
 			createdBy : req.query.createdBy || '',
@@ -62,6 +61,11 @@ export async function updateStation(req, res) {
 	const { loggedInUser, body: station } = req
     const { _id: userId, isAdmin } = loggedInUser
 
+
+	console.log('controller update station')
+
+
+	// if attampt to update only saved by - that ok
      if(!isAdmin && station.createdBy.id !== userId) {
 
         res.status(403).send('Not your station...')
@@ -76,6 +80,33 @@ export async function updateStation(req, res) {
 		res.status(400).send({ err: 'Failed to update station' })
 	}
 }
+
+
+export async function updateStationSavedBy(req, res) {
+	const { loggedInUser, body: station } = req
+    const { _id: userId, isAdmin } = loggedInUser
+
+
+	console.log('controller update station savedby')
+
+
+	// if attampt to update only saved by - that ok
+    //  if(!isAdmin && station.createdBy.id !== userId) {
+
+    //     res.status(403).send('Not your station...')
+    //     return
+    // }
+
+	try {
+		const updatedStation = await stationService.updateSavedBy(station)
+		res.json(updatedStation)
+	} catch (err) {
+		logger.error('Failed to update station', err)
+		res.status(400).send({ err: 'Failed to update station' })
+	}
+}
+
+
 
 export async function removeStation(req, res) {
 	try {
