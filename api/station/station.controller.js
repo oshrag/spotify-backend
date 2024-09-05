@@ -3,18 +3,13 @@ import { stationService } from './station.service.js'
 
 export async function getStations(req, res) {
 	console.log('station.controller getStations')
+	const { location, userId, userInput } = req.query
 	try {
-		const filterBy = {
-			createdBy : req.query.createdBy || '',
-			notCreatedBy : req.query.notCreatedBy || '',
-			// txt: req.query.txt || '',
-			// minSpeed: +req.query.minSpeed || 0,
-            // sortField: req.query.sortField || '',
-            // sortDir: req.query.sortDir || 1,
-			// pageIdx: req.query.pageIdx,
-		}
+		const filterBy = { location, userId, userInput }
+		console.log("stationController:getStations:filterBy: ", filterBy);
+
 		const stations = await stationService.query(filterBy)
-        
+
 		res.json(stations)
 	} catch (err) {
 		logger.error('Failed to get stationss', err)
@@ -33,14 +28,24 @@ export async function getStationById(req, res) {
 	}
 }
 
+export async function getUserLikedSongs(req, res) {
+	try {
+		const userLikedSongs = await stationService.getUserLikedSongs()
+		res.json(userLikedSongs)
+	} catch (error) {
+		logger.error('Failed to get user liked songs', error)
+		res.status(400).send({ err: 'Failed to get user liked songs' })
+	}
+}
+
 export async function addStation(req, res) {
 	const { loggedInUser, body: station } = req
-    console.log('station:', station)
+	console.log('station:', station)
 	try {
-		
-        
+
+
 		// const logeddinUserCopy = { ...loggedInUser }
-        // delete logeddinUserCopy._id;
+		// delete logeddinUserCopy._id;
 		// station.createdBy = logeddinUserCopy
 		// station.createdBy.id = loggedInUser._id
 
@@ -60,13 +65,13 @@ export async function addStation(req, res) {
 
 export async function updateStation(req, res) {
 	const { loggedInUser, body: station } = req
-    const { _id: userId, isAdmin } = loggedInUser
+	const { _id: userId, isAdmin } = loggedInUser
 
-     if(!isAdmin && station.createdBy.id !== userId) {
+	if (!isAdmin && station.createdBy.id !== userId) {
 
-        res.status(403).send('Not your station...')
-        return
-    }
+		res.status(403).send('Not your station...')
+		return
+	}
 
 	try {
 		const updatedStation = await stationService.update(station)

@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 
 import { userService } from '../user/user.service.js'
 import { logger } from '../../services/logger.service.js'
+import { stationService } from '../station/station.service.js'
 
 const cryptr = new Cryptr(process.env.SECRET || 'Secret-Puk-1234')
 
@@ -47,6 +48,9 @@ async function signup({ fullname, username, password, email }) {
             email
         }
         userToSave = await userService.save(userToSave)
+        const {_id, ...rest} = _getMiniUser(userToSave)
+        const createdBy = {id: _id, ...rest}
+        await stationService.createLikedSongsStation(createdBy)
         return _getMiniUser(userToSave)
     } catch (error) {
         logger.error("Cannot sign up", error)
