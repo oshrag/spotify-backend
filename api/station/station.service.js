@@ -1,11 +1,7 @@
 import { ObjectId } from 'mongodb'
-
 import { logger } from '../../services/logger.service.js'
-import { makeId } from '../../services/util.service.js'
 import { dbService } from '../../services/db.service.js'
 import { asyncLocalStorage } from '../../services/als.service.js'
-
-const PAGE_SIZE = 3
 
 export const stationService = {
     remove,
@@ -13,37 +9,17 @@ export const stationService = {
     getById,
     add,
     update,
-    createLikedSongsStation
+    createLikedSongsStation,
+    getUserLikedSongs
     // addCarMsg,
     // removeCarMsg,
 }
 
 async function query(filterBy = {}) {
     try {
-
-       console.log('filterby:', filterBy)
-
         const criteria = _buildCriteria(filterBy)
-        // const sort = _buildSort(filterBy)
-
-        console.log('filterby:', filterBy)
-        console.log('criteria:', criteria)
-
         const collection = await dbService.getCollection('station')
-        var stationCursor = await collection.find(criteria)
-        console.log('station.service query')
-        //var stationCursor = await collection.find()
-
-
-        // if (filterBy.pageIdx !== undefined) {
-        //     stationCursor.skip(filterBy.pageIdx * PAGE_SIZE).limit(PAGE_SIZE)
-        // }
-
-        const stations = stationCursor.toArray()
-
-
-
-
+        const stations = await collection.find(criteria).toArray()
 
         return stations
     } catch (err) {
@@ -58,7 +34,7 @@ async function getById(stationId) {
 
         const collection = await dbService.getCollection('station')
         const station = await collection.findOne(criteria)
-        // console.log('station:', station)
+        if (!station) throw new Error(`Cannot get station with _id ${stationId}`)
         station.createdAt = station._id.getTimestamp()
         return station
     } catch (err) {
@@ -102,7 +78,7 @@ async function add(station) {
 }
 
 async function update(station) {
-    const stationToSave = { name: station.name, description: station.description, songs: station.songs , imgUrl : station.imgUrl}
+    const stationToSave = { name: station.name, description: station.description, songs: station.songs, imgUrl: station.imgUrl }
 
     try {
         const criteria = { _id: ObjectId.createFromHexString(station._id) }
@@ -117,9 +93,8 @@ async function update(station) {
     }
 }
 
-
 async function updateSavedBy(station) {
-    const stationToSave = { savedBy : station.savedBy }
+    const stationToSave = { savedBy: station.savedBy }
 
     console.log('upadateSavedBy stationToSave:', stationToSave)
 
@@ -156,52 +131,17 @@ function createLikedSongsStation(miniUser) {
 async function getUserLikedSongs() {
     try {
         const collection = await dbService.getCollection('station')
-        const loggedInUser = asyncLocalStorage.getStore()
-        const criteria = {
-            "createdBy.id": ObjectId.createFromHexString(loggedInUser._id),
-            type: "liked"
-        }
+        const { loggedInUser } = asyncLocalStorage.getStore()
+        const criteria = { "createdBy.id": loggedInUser._id, type: "liked" }
         const userLikedSongs = await collection.findOne(criteria)
+
         if (!userLikedSongs) throw new Error("Not your liked songs station")
+        return userLikedSongs
     } catch (error) {
         logger.error("Having issues with finding user liked songs", error)
         throw error
     }
 }
-
-
-
-
-// async function addCarMsg(carId, msg) {
-//     try {
-//         const criteria = { _id: ObjectId.createFromHexString(carId) }
-//         msg.id = makeId()
-
-//         const collection = await dbService.getCollection('car')
-//         await collection.updateOne(criteria, { $push: { msgs: msg } })
-
-//         return msg
-//     } catch (err) {
-//         logger.error(`cannot add car msg ${carId}`, err)
-//         throw err
-//     }
-// }
-
-// async function removeCarMsg(carId, msgId) {
-//     try {
-//         const criteria = { _id: ObjectId.createFromHexString(carId) }
-
-//         const collection = await dbService.getCollection('car')
-//         await collection.updateOne(criteria, { $pull: { msgs: { id: msgId } } })
-
-//         return msgId
-//     } catch (err) {
-//         logger.error(`cannot add car msg ${carId}`, err)
-//         throw err
-//     }
-// }
-
-
 
 function _buildCriteria(filterBy) {
     const { location, userId, userInput } = filterBy
@@ -221,10 +161,3 @@ function _buildCriteria(filterBy) {
     }
     return criteria
 }
-
-function _buildSort(filterBy) {
-    if (!filterBy.sortField) return {}
-    return { [filterBy.sortField]: filterBy.sortDir }
-}
-
-// {$or: [{vendor :{$regex:'b', $options:"i"}}, {'owner.fullname' :{$regex:'b', $options:"i"}}]}
