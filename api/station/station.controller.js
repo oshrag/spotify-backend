@@ -90,13 +90,6 @@ export async function updateStationSavedBy(req, res) {
 	console.log('controller update station savedby')
 
 
-	// if attampt to update only saved by - that ok
-    //  if(!isAdmin && station.createdBy.id !== userId) {
-
-    //     res.status(403).send('Not your station...')
-    //     return
-    // }
-
 	try {
 		const updatedStation = await stationService.updateSavedBy(station)
 		res.json(updatedStation)

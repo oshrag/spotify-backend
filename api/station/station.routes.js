@@ -15,7 +15,7 @@ router.get('/', getStations)
 router.get('/:id', log, getStationById)
 router.post('/', log, requireAuth, addStation)
 router.put('/', requireAuth, updateStation)
-router.put('/:id', requireAuth, updateStationSavedBy)
+router.put('/savedby', requireAuth, updateStationSavedBy)
 
 router.delete('/:id', requireAuth, removeStation)
 // router.delete('/:id', requireAuth, requireAdmin, removeCar)
