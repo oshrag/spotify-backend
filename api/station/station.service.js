@@ -13,25 +13,25 @@ export const stationService = {
     getById,
     add,
     update,
-    createLikedSongsStation,
-    updateSavedBy
+    createLikedSongsStation
     // addCarMsg,
     // removeCarMsg,
 }
 
-async function query(filterBy = { txt: '' }) {
+async function query(filterBy = {}) {
     try {
 
-      
+       console.log('filterby:', filterBy)
 
         const criteria = _buildCriteria(filterBy)
         // const sort = _buildSort(filterBy)
 
-        // console.log('filterby:', filterBy)
-        // console.log('criteria:', criteria)
+        console.log('filterby:', filterBy)
+        console.log('criteria:', criteria)
 
         const collection = await dbService.getCollection('station')
         var stationCursor = await collection.find(criteria)
+        console.log('station.service query')
         //var stationCursor = await collection.find()
 
 
@@ -102,10 +102,7 @@ async function add(station) {
 }
 
 async function update(station) {
-    const stationToSave = { name: station.name, description: station.description, songs: station.songs , imgUrl : station.imgUrl, savedBy : station.savedBy}
-
-    console.log('upadate stationToSave:', stationToSave)
-
+    const stationToSave = { name: station.name, description: station.description, songs: station.songs , imgUrl : station.imgUrl}
 
     try {
         const criteria = { _id: ObjectId.createFromHexString(station._id) }
@@ -141,20 +138,36 @@ async function updateSavedBy(station) {
 }
 
 function createLikedSongsStation(miniUser) {
-    const newStation =  {
+    miniUser.id = miniUser.id.toString()
+    const newStation = {
         name: "Liked Songs",
         type: "liked",
-        description: null,
-        imgUrl: 'https://www.greencode.co.il/wp-content/uploads/2024/07/station-thumb-default.jpg',
+        description: '',
+        imgUrl: 'https://misc.scdn.co/liked-songs/liked-songs-300.png',
         tags: [],
         createdBy: miniUser,
         savedBy: [],
         songs: []
     }
 
-    add(newStation);
+    return add(newStation);
 }
 
+async function getUserLikedSongs() {
+    try {
+        const collection = await dbService.getCollection('station')
+        const loggedInUser = asyncLocalStorage.getStore()
+        const criteria = {
+            "createdBy.id": ObjectId.createFromHexString(loggedInUser._id),
+            type: "liked"
+        }
+        const userLikedSongs = await collection.findOne(criteria)
+        if (!userLikedSongs) throw new Error("Not your liked songs station")
+    } catch (error) {
+        logger.error("Having issues with finding user liked songs", error)
+        throw error
+    }
+}
 
 
 
@@ -191,28 +204,22 @@ function createLikedSongsStation(miniUser) {
 
 
 function _buildCriteria(filterBy) {
+    const { location, userId, userInput } = filterBy
+    const criteria = {}
 
-    if (filterBy.createdBy) {
-        const criteria = {
-            $or: [
-                { 'createdBy.id': filterBy.createdBy },
-                { 'savedBy': { $in: [filterBy.createdBy] } }
-            ]
-        }
-        return criteria
-    } else if (filterBy.notCreatedBy) {
-        const criteria = {
-            $nor: [
-                { 'createdBy.id': filterBy.notCreatedBy }, 
-                { 'savedBy': { $in: [filterBy.notCreatedBy] } } 
-            ]
-        }
-        return criteria
-    } else {
-        return {}
+    if (location === "library" && userId) {
+        criteria.$or = [{ "createdBy.id": userId }, { savedBy: userId }]
     }
-
-
+    if (location === "home" && userId) {
+        criteria.$nor = [{ "createdBy.id": userId }, { type: "liked" }]
+    }
+    if (location === "home" && !userId) {
+        criteria.type = { $ne: "liked" };
+    }
+    if (location === "search" && userInput) {
+        criteria.tags = { $elemMatch: { $regex: `^${userInput}$`, $options: 'i' } }
+    }
+    return criteria
 }
 
 function _buildSort(filterBy) {
