@@ -82,6 +82,26 @@ export async function updateStation(req, res) {
 	}
 }
 
+
+export async function updateStationSavedBy(req, res) {
+	const { loggedInUser, body: station } = req
+    const { _id: userId, isAdmin } = loggedInUser
+
+
+	console.log('controller update station savedby')
+
+
+	try {
+		const updatedStation = await stationService.updateSavedBy(station)
+		res.json(updatedStation)
+	} catch (err) {
+		logger.error('Failed to update station', err)
+		res.status(400).send({ err: 'Failed to update station' })
+	}
+}
+
+
+
 export async function removeStation(req, res) {
 	try {
 		const stationId = req.params.id
