@@ -6,8 +6,6 @@ export function requireAuth(req, res, next) {
 	const { loggedInUser } = asyncLocalStorage.getStore()
 	req.loggedInUser = loggedInUser
 
-	console.log('requireAuth')
-
 	// if (config.isGuestMode && !loggedInUser) {
 	// 	req.loggedInUser = { _id: '', fullname: 'Guest' }
 	// 	return next()
