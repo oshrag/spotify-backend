@@ -9,10 +9,9 @@ export const stationService = {
     getById,
     add,
     update,
+    updateSavedBy,
     createLikedSongsStation,
     getUserLikedSongs
-    // addCarMsg,
-    // removeCarMsg,
 }
 
 async function query(filterBy = {}) {
@@ -96,7 +95,6 @@ async function update(station) {
 async function updateSavedBy(station) {
     const stationToSave = { savedBy: station.savedBy }
 
-    console.log('upadateSavedBy stationToSave:', stationToSave)
 
 
     try {

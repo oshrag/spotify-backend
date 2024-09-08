@@ -67,7 +67,7 @@ export async function updateStation(req, res) {
 }
 
 export async function updateStationSavedBy(req, res) {
-	const { loggedInUser, body: station } = req
+	const { body: station } = req
 
 	try {
 		const updatedStation = await stationService.updateSavedBy(station)
