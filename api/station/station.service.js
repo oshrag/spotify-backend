@@ -95,8 +95,6 @@ async function update(station) {
 async function updateSavedBy(station) {
     const stationToSave = { savedBy: station.savedBy }
 
-
-
     try {
         const criteria = { _id: ObjectId.createFromHexString(station._id) }
 
