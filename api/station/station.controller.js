@@ -1,9 +1,10 @@
 import { Socket } from 'socket.io'
 import { logger } from '../../services/logger.service.js'
 import { stationService } from './station.service.js'
-import { socketService } from '../../services/socket.service.js'
 import { userService } from '../user/user.service.js'
 import { asyncLocalStorage } from '../../services/als.service.js'
+import { ObjectId } from 'mongodb'
+import { socketService } from '../../services/socket.service.js'
 
 export async function getStations(req, res) {
 	const { location, userId, userInput } = req.query
@@ -63,7 +64,7 @@ export async function updateStation(req, res) {
 	}
 
 	try {
-		const previousStation = await station.servvice.getById(station)
+		const previousStation = await stationService.getById(station._id)
 		const updatedStation = await stationService.update(station)
 		if (updatedStation.songs.length > previousStation.songs.length) {
 			socketService.emitTo({
@@ -83,8 +84,8 @@ export async function updateStationSavedBy(req, res) {
 	let updatedStation = req.body
 	const { loggedInUser } = asyncLocalStorage.getStore()
 	try {
-		const previousStation = await stationService.getById(updatedStation)
-		updatedStation = await stationService.updateSavedBy(station)
+		const previousStation = await stationService.getById(updatedStation._id)
+		updatedStation = await stationService.updateSavedBy(updatedStation)
 		if (updatedStation.savedBy.length > previousStation.savedBy.length) {
 			socketService.emitToUser({
 				type: "station-saved",
