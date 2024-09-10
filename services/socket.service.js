@@ -12,6 +12,14 @@ export function setupSocketAPI(http) {
     gIo.on('connection', socket => {
         socket.on('disconnect', socket => { })
 
+        socket.on('user-watch-station', stationId => {
+            socket.join('watchedStation' + stationId)
+        })
+
+        socket.on('user-left-station', stationId => {
+            socket.leave('watchedStation' + stationId)
+        })
+
         socket.on('chat-set-topic', topic => {
             if (socket.myTopic === topic) return
             if (socket.myTopic) {
@@ -27,9 +35,6 @@ export function setupSocketAPI(http) {
             gIo.to(socket.myTopic).emit('chat-add-msg', msg)
         })
 
-        socket.on('user-watch', userId => {
-            socket.join('watching:' + userId)
-        })
         socket.on('set-user-socket', userId => {
             socket.userId = userId
         })
@@ -41,7 +46,7 @@ export function setupSocketAPI(http) {
 }
 
 function emitTo({ type, data, label }) {
-    if (label) gIo.to('watching:' + label.toString()).emit(type, data)
+    if (label) gIo.to(label).emit(type, data)
     else gIo.emit(type, data)
 }
 
@@ -58,11 +63,16 @@ async function emitToUser({ type, data, userId }) {
 
 async function join({ room, userId }) {
     const socket = await _getUserSocket(userId)
-    socket.join(room)
+    if (socket) {
+        socket.join(room)
+    }
 }
+
 async function leave({ room, userId }) {
     const socket = await _getUserSocket(userId)
-    socket.leave(room)
+    if (socket) {
+        socket.leave(room)
+    }
 }
 
 // If possible, send to all sockets BUT not the current socket 
