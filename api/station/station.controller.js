@@ -54,18 +54,25 @@ export async function addStation(req, res) {
 }
 
 export async function updateStation(req, res) {
-	const { loggedInUser, body: station } = req
-	const { _id: userId, isAdmin } = loggedInUser
-	console.log("stationController:updateStation:loggedInUser: ", loggedInUser);
+	let updatedStation = req.body
+	const { loggedInUser } = asyncLocalStorage.getStore()
 
-	if (!isAdmin && station.createdBy.id !== userId) {
+	if (!loggedInUser.isAdmin && updatedStation.createdBy.id !== loggedInUser._id) {
 		res.status(403).send('Not your station...')
 		return
 	}
 
 	try {
-		const previousStation = await stationService.getById(station._id)
-		const updatedStation = await stationService.update(station)
+		const previousStation = await stationService.getById(updatedStation._id)
+		updatedStation = await stationService.update(updatedStation)
+
+		socketService.broadcast({
+			type: 'station-updated',
+			data: updatedStation,
+			room: "watchedStation" + updatedStation._id,
+			userId: loggedInUser._id
+		})
+
 		if (updatedStation.songs.length > previousStation.songs.length) {
 			socketService.emitTo({
 				type: "song-added",
@@ -73,6 +80,7 @@ export async function updateStation(req, res) {
 				label: "savedStation" + updatedStation._id
 			})
 		}
+
 		res.json(updatedStation)
 	} catch (err) {
 		logger.error('Failed to update station', err)
