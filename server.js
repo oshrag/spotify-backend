@@ -51,6 +51,26 @@ setupSocketAPI(server)
 // it will still serve the index.html file
 // and allow vue/react-router to take it from there
 
+
+
+// // הגדר את התיקייה public כסטטית
+// app.use(express.static(path.join(__dirname, 'public')));
+
+// // מענה לכל נתיב אחר עם index.html
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// });
+
+
+
+// app.use((req, res, next) => {
+//     if (req.url.endsWith('.js')) {
+//       res.type('application/javascript');
+//     }
+//     next();
+//   });
+
+
 app.get('/**', (req, res) => {
     res.sendFile(path.resolve('public/index.html'))
 })
