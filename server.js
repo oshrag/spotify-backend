@@ -9,6 +9,8 @@ import { userRoutes } from './api/user/user.routes.js'
 import { reviewRoutes } from './api/review/review.routes.js'
 import { carRoutes } from './api/car/car.routes.js'
 import { stationRoutes } from './api/station/station.routes.js'
+import { youtubeRoutes } from './api/youtube/youtube.routes.js'
+
 
 import { setupSocketAPI } from './services/socket.service.js'
 
@@ -42,6 +44,8 @@ app.use('/api/user', userRoutes)
 app.use('/api/review', reviewRoutes)
 app.use('/api/car', carRoutes)
 app.use('/api/station', stationRoutes)
+app.use('/api/youtube', youtubeRoutes)
+
 
 
 setupSocketAPI(server)
