@@ -5,7 +5,7 @@ import { userService } from '../user/user.service.js'
 import { logger } from '../../services/logger.service.js'
 import { stationService } from '../station/station.service.js'
 
-const cryptr = new Cryptr(process.env.SECRET || 'Secret-Puk-1234')
+const cryptr = new Cryptr(process.env.SECRET)
 
 export const authService = {
     signup,
